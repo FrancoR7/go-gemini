@@ -94,16 +94,20 @@ func Start() string {
 	return "Error processing image"
 }
 
-func StartFromFile(file io.Reader) string {
+func StartFromFile(file io.Reader, userApiKey string) string {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
 
 	ctx := context.Background()
-
-	apiKey, ok := os.LookupEnv("GEMINI_API_KEY")
-	if !ok {
-		log.Fatalln("Environment variable GEMINI_API_KEY not set")
+	apiKey := userApiKey
+	if len(apiKey) == 0 {
+		defaultApi, ok := os.LookupEnv("GEMINI_API_KEY")
+		if !ok {
+			log.Fatalln("Environment variable GEMINI_API_KEY not set")
+		}
+		apiKey = defaultApi
+		log.Println("Using default API key")
 	}
 
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))

@@ -16,6 +16,9 @@ func ImageProcessorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get ID from query parameter
+	apiKey := r.URL.Query().Get("api_key")
+
 	// Parse multipart form
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10 MB max
 		http.Error(w, "Failed to parse form", http.StatusBadRequest)
@@ -32,7 +35,7 @@ func ImageProcessorHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Call processor
 	log.Println("Processing image")
-	alias := processor.StartFromFile(uploadedFile)
+	alias := processor.StartFromFile(uploadedFile, apiKey)
 
 	//Response
 	w.Header().Set("Content-Type", "application/json")
