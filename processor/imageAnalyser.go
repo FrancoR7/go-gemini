@@ -88,7 +88,7 @@ func Start() (string, error) {
 		},
 	}
 
-	resp, errorMessage := session.SendMessage(ctx, genai.Text("El alias es un string alphanumérico sin espacios. Identifica el alias en esta imagen. Solo devuelve el alias todo en minuscúlas."))
+	resp, errorMessage := session.SendMessage(ctx, genai.Text("El `alias` es un string alfanumérico donde no se permiten espacios ni caracteres especiales, excepto el punto, los espacios al principio, al final o entre las palabras no estan permitidos. Identifica un alias en la imagen provista y extraelo retornando unicamente el string identificado, transformando todas las letras a minuscúlas."))
 	if errorMessage != nil {
 		fmt.Printf("Error sending message: %v \n", errorMessage)
 		return "", fmt.Errorf("error sending message: %v", errorMessage)
@@ -96,7 +96,7 @@ func Start() (string, error) {
 
 	for _, part := range resp.Candidates[0].Content.Parts {
 		fmt.Printf("Alias: %v\n", part)
-		return fmt.Sprintf("%v\n", part), nil
+		return fmt.Sprintf("%v", part), nil
 	}
 
 	return "", errors.New("error processing image")
@@ -144,7 +144,7 @@ func StartFromFile(file io.Reader, userApiKey string) (string, error) {
 		},
 	}
 
-	resp, errorMessage := session.SendMessage(ctx, genai.Text("El alias es un string alphanumérico sin espacios ni tildes, no contiene caracteres especiales salvo el punto. Identifica el alias en esta imagen. Solo devuelve el alias todo en minuscúlas sin saltos de linea."))
+	resp, errorMessage := session.SendMessage(ctx, genai.Text("El `alias` es un string alfanumérico donde no se permiten espacios ni caracteres especiales, excepto el punto, los espacios al principio, al final o entre las palabras no estan permitidos. Identifica un alias en la imagen provista y extraelo retornando unicamente el string identificado, transformando todas las letras a minuscúlas."))
 	if errorMessage != nil {
 		fmt.Printf("Error sending message: %v \n", errorMessage)
 		return "", fmt.Errorf("error sending message: %v", errorMessage)
