@@ -10,10 +10,12 @@ import (
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
 
+	"errors"
+
 	"github.com/joho/godotenv"
 )
 
-func uploadFromPathToGemini(ctx context.Context, client *genai.Client, path, mimeType string) string {
+func uploadFromPathToGemini(ctx context.Context, client *genai.Client, path, mimeType string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("Error opening file: %v", err)
@@ -23,18 +25,19 @@ func uploadFromPathToGemini(ctx context.Context, client *genai.Client, path, mim
 	return uploadFromFileToGemini(ctx, client, file, mimeType)
 }
 
-func uploadFromFileToGemini(ctx context.Context, client *genai.Client, file io.Reader, mimeType string) string {
+func uploadFromFileToGemini(ctx context.Context, client *genai.Client, file io.Reader, mimeType string) (string, error) {
 	options := genai.UploadFileOptions{
 		DisplayName: "image.png",
 		MIMEType:    mimeType,
 	}
 	fileData, err := client.UploadFile(ctx, "", file, &options)
 	if err != nil {
-		log.Fatalf("Error uploading file: %v", err)
+		log.Printf("Error uploading file: %v \n", err)
+		return "", fmt.Errorf("error uploading file: %v", err)
 	}
 
 	log.Printf("Uploaded file %s as: %s", fileData.DisplayName, fileData.URI)
-	return fileData.URI
+	return fileData.URI, nil
 }
 
 func getModel(client *genai.Client) *genai.GenerativeModel {
@@ -47,7 +50,7 @@ func getModel(client *genai.Client) *genai.GenerativeModel {
 	return model
 }
 
-func Start() string {
+func Start() (string, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
@@ -67,8 +70,12 @@ func Start() string {
 
 	model := getModel(client)
 
+	fileURI, error := uploadFromPathToGemini(ctx, client, "./images/image1.png", "image/png")
+	if error != nil {
+		return "", error
+	}
 	fileURIs := []string{
-		uploadFromPathToGemini(ctx, client, "./images/image1.png", "image/png"),
+		fileURI,
 	}
 
 	session := model.StartChat()
@@ -81,20 +88,21 @@ func Start() string {
 		},
 	}
 
-	resp, err := session.SendMessage(ctx, genai.Text("El alias es un string alphanumérico sin espacios. Identifica el alias en esta imagen. Solo devuelve el alias todo en minuscúlas."))
-	if err != nil {
-		log.Fatalf("Error sending message: %v", err)
+	resp, errorMessage := session.SendMessage(ctx, genai.Text("El alias es un string alphanumérico sin espacios. Identifica el alias en esta imagen. Solo devuelve el alias todo en minuscúlas."))
+	if errorMessage != nil {
+		fmt.Printf("Error sending message: %v \n", errorMessage)
+		return "", fmt.Errorf("error sending message: %v", errorMessage)
 	}
 
 	for _, part := range resp.Candidates[0].Content.Parts {
 		fmt.Printf("Alias: %v\n", part)
-		return fmt.Sprintf("%v\n", part)
+		return fmt.Sprintf("%v\n", part), nil
 	}
 
-	return "Error processing image"
+	return "", errors.New("error processing image")
 }
 
-func StartFromFile(file io.Reader, userApiKey string) string {
+func StartFromFile(file io.Reader, userApiKey string) (string, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
@@ -118,8 +126,12 @@ func StartFromFile(file io.Reader, userApiKey string) string {
 
 	model := getModel(client)
 
+	fileURI, error := uploadFromFileToGemini(ctx, client, file, "image/png")
+	if error != nil {
+		return "", error
+	}
 	fileURIs := []string{
-		uploadFromFileToGemini(ctx, client, file, "image/png"),
+		fileURI,
 	}
 
 	session := model.StartChat()
@@ -132,15 +144,16 @@ func StartFromFile(file io.Reader, userApiKey string) string {
 		},
 	}
 
-	resp, err := session.SendMessage(ctx, genai.Text("El alias es un string alphanumérico sin espacios ni tildes, no contiene caracteres especiales salvo el punto. Identifica el alias en esta imagen. Solo devuelve el alias todo en minuscúlas sin saltos de linea."))
-	if err != nil {
-		log.Fatalf("Error sending message: %v", err)
+	resp, errorMessage := session.SendMessage(ctx, genai.Text("El alias es un string alphanumérico sin espacios ni tildes, no contiene caracteres especiales salvo el punto. Identifica el alias en esta imagen. Solo devuelve el alias todo en minuscúlas sin saltos de linea."))
+	if errorMessage != nil {
+		fmt.Printf("Error sending message: %v \n", errorMessage)
+		return "", fmt.Errorf("error sending message: %v", errorMessage)
 	}
 
 	for _, part := range resp.Candidates[0].Content.Parts {
 		fmt.Printf("Alias: %v\n", part)
-		return fmt.Sprintf("%v", part)
+		return fmt.Sprintf("%v", part), nil
 	}
 
-	return "Error processing image"
+	return "", errors.New("error processing image")
 }

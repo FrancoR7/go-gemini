@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -35,7 +36,11 @@ func ImageProcessorHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Call processor
 	log.Println("Processing image")
-	alias := processor.StartFromFile(uploadedFile, apiKey)
+	alias, error := processor.StartFromFile(uploadedFile, apiKey)
+	if error != nil {
+		http.Error(w, fmt.Sprintf("%v", error), http.StatusInternalServerError)
+		return
+	}
 
 	//Response
 	w.Header().Set("Content-Type", "application/json")
