@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -12,6 +13,6 @@ func main() {
 	http.HandleFunc("/imageProcessor", handlers.ImageProcessorHandler)
 
 	// Start server
-	log.Println("Server starting on :8080")
+	fmt.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
