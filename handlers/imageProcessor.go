@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"go-gemini/processor"
@@ -35,7 +34,7 @@ func ImageProcessorHandler(w http.ResponseWriter, r *http.Request) {
 	defer uploadedFile.Close()
 
 	//Call processor
-	log.Println("Processing image")
+	fmt.Println("Processing image")
 	alias, error := processor.StartFromFile(uploadedFile, apiKey)
 	if error != nil {
 		http.Error(w, fmt.Sprintf("%v", error), http.StatusInternalServerError)
