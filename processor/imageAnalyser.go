@@ -26,7 +26,7 @@ func uploadFromFileToGemini(ctx context.Context, client *genai.Client, file io.R
 		return "", fmt.Errorf("error uploading file: %v", err)
 	}
 
-	fmt.Printf("Uploaded file %s as: %s", fileData.DisplayName, fileData.URI)
+	fmt.Printf("Uploaded file %s as: %s \n", fileData.DisplayName, fileData.URI)
 	return fileData.URI, nil
 }
 
