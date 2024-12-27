@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
@@ -90,7 +91,7 @@ func StartFromFile(file io.Reader, userApiKey string) (string, error) {
 
 	for _, part := range resp.Candidates[0].Content.Parts {
 		fmt.Printf("Alias: %v\n", part)
-		return fmt.Sprintf("%v", part), nil
+		return strings.Replace(fmt.Sprintf("%v", part), "\n", "", 1), nil
 	}
 
 	return "", errors.New("error processing image")

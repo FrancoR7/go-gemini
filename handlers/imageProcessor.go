@@ -8,6 +8,10 @@ import (
 	"go-gemini/processor"
 )
 
+type Alias struct {
+	Alias string `json:"alias"`
+}
+
 // ImageProcessHandler handles image upload and processing
 func ImageProcessorHandler(w http.ResponseWriter, r *http.Request) {
 	// Validate POST request
@@ -43,7 +47,7 @@ func ImageProcessorHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"alias": alias,
+	json.NewEncoder(w).Encode(Alias{
+		Alias: alias,
 	})
 }
